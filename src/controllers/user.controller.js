@@ -44,4 +44,29 @@ const registeruser= asynchandler(async (req,res,next)=>{
     return res.status(201).json(new ApiREsponse(201,"User created successfully",NEWuser));
 })
 
-export {registeruser};
+const loginuser= asynchandler(async (req,res,next)=>{
+    //  get data from req.body
+    // username or email
+    // find the user in db 
+    // check for pass 
+    // Acccess token and refresh token
+    // send cookies
+    // send response
+
+    const {email,password}= req.body;   
+    if(!email || !password){
+        return next(new Apierror(400,"All fields are required"));
+    }
+    const user = await User.findOne({email});
+    if(!user){
+        return next(new Apierror(400,"User not found"));
+    }
+    const isPasswordCorrect = await user.isPasswordCorrect(password);
+    if(!isPasswordCorrect){
+        return next(new Apierror(400,"Password is incorrect"));
+    }
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+    res.cookie("jwt",refreshToken,{httpOnly:true,maxAge:process.env.REFRESH_TOKEN_EXPIRY});
+})
+export {registeruser,loginuser};
